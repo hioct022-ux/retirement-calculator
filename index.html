@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>退休金試算器</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{--bg:#0e0f0d;--surface:#161714;--surface2:#1e1f1c;--surface3:#262723;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#f0ece3;--text2:#8a8880;--text3:#4a4946;--green:#4ade9a;--amber:#fbbf24;--red:#f87171;--blue:#60a5fa;--accent:#4ade9a;--r:8px;--rl:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue','PingFang TC','Microsoft JhengHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+.header{border-bottom:0.5px solid var(--border);padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header h1{font-size:1.75rem;font-weight:700;letter-spacing:-0.02em;line-height:1;margin-bottom:4px}
+.header p{font-size:12px;color:var(--text2);font-weight:300}
+.status-badge{font-family:monospace;font-size:11px;padding:5px 14px;border-radius:99px;border:0.5px solid;white-space:nowrap;transition:all .3s;flex-shrink:0}
+.main{display:flex;min-height:calc(100vh - 90px)}
+.sidebar{width:285px;flex-shrink:0;border-right:0.5px solid var(--border);padding:1.5rem 1.25rem;overflow-y:auto;display:flex;flex-direction:column;gap:1.25rem}
+.sec-title{font-family:monospace;font-size:10px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.9rem;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:.5px;background:var(--border)}
+.sg{margin-bottom:.85rem}
+.sg:last-child{margin-bottom:0}
+.sh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px}
+.sl{font-size:11px;color:var(--text2);font-weight:300}
+.sv{font-family:monospace;font-size:11px;color:var(--accent);font-weight:600}
+input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:var(--surface3);border-radius:99px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);box-shadow:0 0 0 1px var(--accent);transition:transform .15s}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.sub{font-size:10px;color:var(--text3);margin-top:3px;font-weight:300}
+.pbox{background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:8px}
+.pbox:last-child{margin-bottom:0}
+.pbox-title{font-size:11px;color:var(--text2);margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
+.nbadge{font-family:monospace;font-size:9px;padding:1px 6px;border-radius:3px;background:rgba(74,222,154,.15);color:var(--green);border:0.5px solid rgba(74,222,154,.3)}
+.content{flex:1;padding:1.5rem 1.75rem;display:flex;flex-direction:column;gap:1.1rem;overflow-y:auto}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.metric{background:var(--surface2);border-radius:var(--rl);padding:.875rem 1rem;border:0.5px solid var(--border)}
+.metric:hover{border-color:var(--border2)}
+.ml{font-size:9px;color:var(--text3);margin-bottom:5px;letter-spacing:.04em;text-transform:uppercase}
+.mv{font-family:monospace;font-size:17px;font-weight:700;line-height:1;transition:color .3s}
+.mu{font-size:9px;color:var(--text3);margin-top:4px}
+.chart-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rl);padding:1.25rem 1.5rem}
+.chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem;flex-wrap:wrap;gap:8px}
+.chart-title{font-size:11px;color:var(--text2);font-weight:300}
+.leg-row{display:flex;gap:12px;flex-wrap:wrap}
+.leg{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.leg-line{width:16px;height:2px;border-radius:1px;flex-shrink:0}
+.chart-area{position:relative;height:255px}
+.tags{display:flex;gap:8px;flex-wrap:wrap}
+.tag{font-family:monospace;font-size:10px;padding:3px 10px;border-radius:4px;border:.5px solid}
+.rules-wrap{border-top:.5px solid var(--border);padding-top:1.5rem}
+.rules-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;padding:.3rem 0}
+.rti{font-size:12px;color:var(--text3);transition:transform .25s;display:inline-block}
+.rtl{font-family:monospace;font-size:11px;color:var(--text2);letter-spacing:.06em}
+.rules-body{display:none;padding-top:1.5rem}
+.rb{margin-bottom:1.75rem}
+.rb:last-child{margin-bottom:0}
+.rnum{font-family:monospace;font-size:10px;color:var(--accent);letter-spacing:.1em;margin-bottom:4px}
+.rtitle{font-size:15px;font-weight:500;color:var(--text);margin-bottom:6px}
+.rdesc{font-size:12px;color:var(--text2);line-height:1.8;font-weight:300}
+.cblock{background:var(--surface2);border-left:2px solid var(--accent);border-radius:0 6px 6px 0;padding:.65rem 1rem;font-family:monospace;font-size:11px;color:var(--text);margin:.65rem 0;line-height:1.7;white-space:pre-wrap;overflow-x:auto}
+.rtable{width:100%;border-collapse:collapse;margin:.65rem 0;font-size:11px}
+.rtable th{text-align:left;padding:5px 10px;color:var(--text3);font-family:monospace;font-size:10px;border-bottom:.5px solid var(--border);font-weight:400;letter-spacing:.05em}
+.rtable td{padding:6px 10px;color:var(--text2);border-bottom:.5px solid var(--border);font-weight:300;vertical-align:top}
+.rtable tr:last-child td{border-bottom:none}
+.rtable td:first-child{color:var(--text);font-weight:500}
+.llist{list-style:none;padding:0;margin-top:.5rem}
+.llist li{font-size:12px;color:var(--text2);padding:5px 0;border-bottom:.5px solid var(--border);display:flex;gap:8px;font-weight:300}
+.llist li:last-child{border-bottom:none}
+.llist li::before{content:'—';color:var(--text3);flex-shrink:0;font-family:monospace}
+.fnote{font-size:11px;color:var(--text3);text-align:center;padding:1.25rem 0 .5rem;font-style:italic}
+@media(max-width:860px){.main{flex-direction:column}.sidebar{width:100%;border-right:none;border-bottom:.5px solid var(--border)}.metrics{grid-template-columns:repeat(2,1fr)}.header{padding:1.25rem 1.5rem}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div>
+    <h1>退休金試算器</h1>
+    <p>整合通貨膨脹・退休金收入・市場波動的進階財務預測工具</p>
+  </div>
+  <div class="status-badge" id="status-badge">計算中…</div>
+</header>
+<div class="main">
+  <aside class="sidebar">
+    <div>
+      <div class="sec-title">基本設定</div>
+      <div class="sg"><div class="sh"><span class="sl">目前年齡</span><span class="sv" id="v-age">30 歲</span></div><input type="range" id="s-age" min="20" max="60" value="30" step="1"></div>
+      <div class="sg"><div class="sh"><span class="sl">預計退休年齡</span><span class="sv" id="v-retire">65 歲</span></div><input type="range" id="s-retire" min="50" max="75" value="65" step="1"></div>
+      <div class="sg"><div class="sh"><span class="sl">月薪</span><span class="sv" id="v-salary">5 萬</span></div><input type="range" id="s-salary" min="2" max="30" value="5" step="0.5"></div>
+      <div class="sg"><div class="sh"><span class="sl">儲蓄率</span><span class="sv" id="v-save">20%</span></div><input type="range" id="s-save" min="5" max="70" value="20" step="1"></div>
+      <div class="sg"><div class="sh"><span class="sl">年化報酬率</span><span class="sv" id="v-return">6%</span></div><input type="range" id="s-return" min="1" max="12" value="6" step="0.5"></div>
+      <div class="sg"><div class="sh"><span class="sl">現有存款</span><span class="sv" id="v-current">50 萬</span></div><input type="range" id="s-current" min="0" max="2000" value="50" step="10"></div>
+    </div>
+    <div>
+      <div class="sec-title">進階因素</div>
+      <div class="sg"><div class="sh"><span class="sl">通貨膨脹率</span><span class="sv" id="v-inflation">2%</span></div><input type="range" id="s-inflation" min="0" max="8" value="2" step="0.5"></div>
+      <div class="sg"><div class="sh"><span class="sl">市場波動（年標準差）</span><span class="sv" id="v-vol">15%</span></div><input type="range" id="s-vol" min="0" max="30" value="15" step="1"></div>
+      <div class="sg"><div class="sh"><span class="sl">退休後存活年數</span><span class="sv" id="v-life">25 年</span></div><input type="range" id="s-life" min="10" max="40" value="25" step="1"></div>
+    </div>
+    <div>
+      <div class="sec-title">退休金收入</div>
+      <div class="pbox">
+        <div class="pbox-title">定期給付 <span class="nbadge">月領</span></div>
+        <div class="sg"><div class="sh"><span class="sl">每月退休金</span><span class="sv" id="v-pension">1 萬</span></div><input type="range" id="s-pension" min="0" max="6" value="1" step="0.5"><div class="sub">勞保年金、職業年金等月領</div></div>
+      </div>
+      <div class="pbox">
+        <div class="pbox-title">一次性領取 <span class="nbadge">整筆</span></div>
+        <div class="sg"><div class="sh"><span class="sl">整筆退休金（上限1,500萬）</span><span class="sv" id="v-lumpsum">0 萬</span></div><input type="range" id="s-lumpsum" min="0" max="1500" value="0" step="10"><div class="sub">勞退新制、資遣費、保險金等</div></div>
+      </div>
+    </div>
+  </aside>
+  <main class="content">
+    <div class="metrics">
+      <div class="metric"><div class="ml">預估退休資產（實質）</div><div class="mv" id="m-total" style="color:var(--green)">—</div><div class="mu">今日購買力</div></div>
+      <div class="metric"><div class="ml">每月總收入</div><div class="mv" id="m-monthly" style="color:var(--blue)">—</div><div class="mu">含所有退休金</div></div>
+      <div class="metric"><div class="ml">悲觀情境資產</div><div class="mv" id="m-bear" style="color:var(--red)">—</div><div class="mu">波動 −1σ</div></div>
+      <div class="metric"><div class="ml">距退休年數</div><div class="mv" id="m-years" style="color:var(--amber)">—</div><div class="mu">年</div></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-hdr">
+        <span class="chart-title">資產預測曲線 — 實質購買力（今日幣值）</span>
+        <div class="leg-row">
+          <div class="leg"><div class="leg-line" style="background:#4ade9a"></div>基準累積</div>
+          <div class="leg"><div class="leg-line" style="background:rgba(74,222,154,.4)"></div>樂/悲觀</div>
+          <div class="leg"><div class="leg-line" style="background:#fbbf24"></div>基準提領</div>
+          <div class="leg"><div class="leg-line" style="background:rgba(251,191,36,.4)"></div>提領區間</div>
+        </div>
+      </div>
+      <div class="chart-area"><canvas id="retireChart" role="img" aria-label="退休資產預測折線圖，顯示樂觀、基準、悲觀三種情境下的累積與提領曲線">請拖動左側滑桿以更新圖表</canvas></div>
+    </div>
+    <div class="tags" id="tag-row"></div>
+    <div class="rules-wrap">
+      <div class="rules-toggle" id="rules-toggle"><span class="rti" id="rti">▶</span><span class="rtl">DESIGN RULES — 設計規則說明</span></div>
+      <div class="rules-body" id="rules-body">
+        <div class="rb"><div class="rnum">RULE 01</div><div class="rtitle">累積期複利計算</div><div class="rdesc">每個月將「月薪 × 儲蓄率」投入，以月複利方式滾動成長，持續至退休年齡。</div><div class="cblock">每月末資產 = 上月資產 × (1 + 年化報酬率 ÷ 12) + 每月儲蓄</div></div>
+        <div class="rb"><div class="rnum">RULE 02</div><div class="rtitle">通貨膨脹 — 實質購買力換算</div><div class="rdesc">採費雪方程式換算，所有金額以今日購買力呈現，可直接對應當前生活水準。</div><div class="cblock">實質月報酬率 = (1 + 名目年報酬率) ÷ (1 + 通膨率) − 1，再除以 12</div></div>
+        <div class="rb"><div class="rnum">RULE 03</div><div class="rtitle">退休金收入 — 兩種類型</div><div class="rdesc">月領與整筆均折現為今日幣值後合併計算。</div><table class="rtable"><tr><th>類型</th><th>適用情境</th><th>計算方式</th></tr><tr><td>每月定期給付</td><td>勞保年金、職業年金</td><td>每月固定加入，減少淨提領缺口</td></tr><tr><td>整筆一次性</td><td>勞退新制、資遣費</td><td>退休當下加入資產池，繼續複利</td></tr></table><div class="cblock">每月總收入 = 資產平均月提領 + 每月退休金給付
+淨月提領   = 資產平均月提領 − 每月退休金給付</div></div>
+        <div class="rb"><div class="rnum">RULE 04</div><div class="rtitle">退休後提領邏輯</div><div class="rdesc">退休總資產平均分配至存活年數，提領期資產持續複利，曲線呈弧度而非直線下降。</div><div class="cblock">每月提領額 = 退休總資產 ÷ (存活年數 × 12)
+淨月提領   = 每月提領額 − 每月退休金給付</div></div>
+        <div class="rb"><div class="rnum">RULE 05</div><div class="rtitle">市場波動 — ±1σ 情境模擬</div><div class="rdesc">以年標準差模擬三種情境，各自獨立計算完整的累積與提領曲線。</div><table class="rtable"><tr><th>情境</th><th>報酬率調整</th><th>圖表樣式</th></tr><tr><td>樂觀 +1σ</td><td>名目報酬率 + 年標準差</td><td>淺色虛線</td></tr><tr><td>基準</td><td>名目報酬率（不變）</td><td>深色實線</td></tr><tr><td>悲觀 −1σ</td><td>名目報酬率 − 年標準差</td><td>淡紅虛線</td></tr></table></div>
+        <div class="rb"><div class="rnum">RULE 06</div><div class="rtitle">財務狀況判斷基準</div><div class="rdesc">以月薪 70% 為預期生活水準基準線。</div><table class="rtable"><tr><th>狀況</th><th>條件</th><th>顯示顏色</th></tr><tr><td>充裕 ✦</td><td>每月總收入 ≥ 月薪 70%</td><td>綠色</td></tr><tr><td>尚可</td><td>每月總收入 ≥ 月薪 49%</td><td>琥珀色</td></tr><tr><td>不足</td><td>低於月薪 49%</td><td>紅色</td></tr></table></div>
+        <div class="rb"><div class="rnum">LIMITS</div><div class="rtitle">已知假設與限制</div><ul class="llist"><li>波動模擬僅為靜態 ±1σ，非蒙地卡羅隨機模擬</li><li>未納入薪資成長率或生活費用年增率</li><li>整筆退休金未考慮稅務影響（二代健保、所得稅）</li><li>退休後存活年數為固定假設，未納入長壽風險</li><li>所有金額以台幣計算，未含匯率因素</li></ul></div>
+        <div class="fnote">最後更新：2026 年 5 月 ｜ 僅供參考，不構成投資建議</div>
+      </div>
+    </div>
+  </main>
+</div>
+<script>
+let chart;
+const fmt=n=>Math.round(n).toLocaleString('zh-TW');
+const fmtW=v=>v>=1000?(v/100).toFixed(0)+'千萬':v+'萬';
+function run(ytr,life,cur,mc,nom,inf,mp,ls,sig){
+  const r=((1+nom)/(1+inf)-1)/12;
+  const rBull=((1+Math.min(nom+sig,.99))/(1+inf)-1)/12;
+  const rBear=((1+Math.max(nom-sig,.001))/(1+inf)-1)/12;
+  const grow=mr=>{let a=cur;const arr=[];for(let y=0;y<=ytr;y++){for(let m=0;m<12;m++)a=a*(1+mr)+mc;arr.push(Math.round(a/10000));}return arr;};
+  const ba=grow(r),bla=grow(rBull),bra=grow(rBear);
+  const wd=(start,mr)=>{const tm=life*12;let a=start+ls;const mw=a/tm,nm=mw-mp;const arr=[Math.round(a/10000)];for(let y=1;y<=life;y++){for(let m=0;m<12;m++)a=a*(1+mr)-nm;arr.push(Math.max(0,Math.round(a/10000)));}return{arr,mw};};
+  const wb=wd(ba[ytr]*10000,r),wbl=wd(bla[ytr]*10000,rBull),wbr=wd(bra[ytr]*10000,rBear);
+  return{ba,bla,bra,bw:wb.arr,blw:wbl.arr,brw:wbr.arr,baseRA:ba[ytr],bearRA:bra[ytr],mw:wb.mw};
+}
+function calc(){
+  const age=+document.getElementById('s-age').value;
+  const ret=+document.getElementById('s-retire').value;
+  const sal=+document.getElementById('s-salary').value*10000;
+  const sr=+document.getElementById('s-save').value/100;
+  const nom=+document.getElementById('s-return').value/100;
+  const cur=+document.getElementById('s-current').value*10000;
+  const inf=+document.getElementById('s-inflation').value/100;
+  const pen=+document.getElementById('s-pension').value*10000;
+  const ls=+document.getElementById('s-lumpsum').value*10000;
+  const vol=+document.getElementById('s-vol').value/100;
+  const life=+document.getElementById('s-life').value;
+  const curV=+document.getElementById('s-current').value;
+  const lsV=+document.getElementById('s-lumpsum').value;
+  document.getElementById('v-age').textContent=age+' 歲';
+  document.getElementById('v-retire').textContent=ret+' 歲';
+  document.getElementById('v-salary').textContent=document.getElementById('s-salary').value+' 萬';
+  document.getElementById('v-save').textContent=document.getElementById('s-save').value+'%';
+  document.getElementById('v-return').textContent=document.getElementById('s-return').value+'%';
+  document.getElementById('v-current').textContent=curV>=1000?(curV/100).toFixed(0)+'千萬':curV+'萬';
+  document.getElementById('v-inflation').textContent=document.getElementById('s-inflation').value+'%';
+  document.getElementById('v-pension').textContent=document.getElementById('s-pension').value+' 萬';
+  document.getElementById('v-vol').textContent=document.getElementById('s-vol').value+'%';
+  document.getElementById('v-life').textContent=life+' 年';
+  document.getElementById('v-lumpsum').textContent=lsV>=1000?(lsV/100).toFixed(0)+'千萬':lsV+'萬';
+  const ytr=Math.max(1,ret-age);
+  const res=run(ytr,life,cur,sal*sr,nom,inf,pen/12,ls,vol);
+  const totalM=res.mw+pen/12;
+  const retireAsset=res.baseRA+Math.round(ls/10000);
+  const realR=((1+nom)/(1+inf)-1)*100;
+  const exp=sal*0.7;
+  document.getElementById('m-total').textContent='$'+fmt(retireAsset)+'萬';
+  document.getElementById('m-monthly').textContent='$'+fmt(Math.round(totalM));
+  document.getElementById('m-bear').textContent='$'+fmt(res.bearRA)+'萬';
+  document.getElementById('m-years').textContent=ytr+' 年';
+  const badge=document.getElementById('status-badge');
+  if(totalM>=exp){badge.textContent='✦ 財務充裕';badge.style.cssText='color:#4ade9a;border-color:rgba(74,222,154,.4);background:rgba(74,222,154,.08)';}
+  else if(totalM>=exp*.7){badge.textContent='◆ 尚可調整';badge.style.cssText='color:#fbbf24;border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)';}
+  else{badge.textContent='▲ 需要加強';badge.style.cssText='color:#f87171;border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.08)';}
+  const tags=[
+    {l:`實質報酬 ${realR.toFixed(1)}%`,c:'#fbbf24',bg:'rgba(251,191,36,.06)',bc:'rgba(251,191,36,.3)'},
+    {l:`月領 ${document.getElementById('s-pension').value}萬`,c:'#4ade9a',bg:'rgba(74,222,154,.06)',bc:'rgba(74,222,154,.3)'},
+    ...(lsV>0?[{l:`整筆 ${fmtW(lsV)}`,c:'#60a5fa',bg:'rgba(96,165,250,.06)',bc:'rgba(96,165,250,.3)'}]:[]),
+    {l:`波動 ±${document.getElementById('s-vol').value}%`,c:'#a78bfa',bg:'rgba(167,139,250,.06)',bc:'rgba(167,139,250,.3)'},
+    {l:`距退休 ${ytr}年`,c:'#4a4946',bg:'transparent',bc:'rgba(255,255,255,.07)'},
+  ];
+  document.getElementById('tag-row').innerHTML=tags.map(t=>`<span class="tag" style="color:${t.c};background:${t.bg};border-color:${t.bc}">${t.l}</span>`).join('');
+  const labels=[];
+  for(let y=0;y<=ytr;y++)labels.push((age+y)+'歲');
+  for(let y=1;y<=life;y++)labels.push((ret+y)+'歲');
+  const aL=ytr+1,wL=life+1;
+  const bA=[...res.ba,...Array(wL-1).fill(null)];
+  const blA=[...res.bla,...Array(wL-1).fill(null)];
+  const brA=[...res.bra,...Array(wL-1).fill(null)];
+  const bW=[...Array(aL-1).fill(null),...res.bw];
+  const blW=[...Array(aL-1).fill(null),...res.blw];
+  const brW=[...Array(aL-1).fill(null),...res.brw];
+  const allV=[...res.ba,...res.bla,...res.bra,...res.bw,...res.blw,...res.brw];
+  const mx=Math.round(Math.max(...allV)*1.12);
+  if(chart)chart.destroy();
+  chart=new Chart(document.getElementById('retireChart'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'樂觀累積',data:blA,borderColor:'rgba(74,222,154,.35)',backgroundColor:'rgba(74,222,154,.05)',fill:true,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
+      {label:'基準累積',data:bA,borderColor:'#4ade9a',backgroundColor:'rgba(74,222,154,.08)',fill:true,tension:.35,pointRadius:0,borderWidth:2.5},
+      {label:'悲觀累積',data:brA,borderColor:'rgba(248,113,113,.35)',backgroundColor:'rgba(248,113,113,.04)',fill:true,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
+      {label:'樂觀提領',data:blW,borderColor:'rgba(251,191,36,.35)',fill:false,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
+      {label:'基準提領',data:bW,borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.08)',fill:true,tension:.35,pointRadius:0,borderWidth:2.5},
+      {label:'悲觀提領',data:brW,borderColor:'rgba(248,113,113,.4)',fill:false,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
+    ]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e1f1c',borderColor:'rgba(255,255,255,.1)',borderWidth:.5,titleColor:'#8a8880',bodyColor:'#f0ece3',padding:10,filter:item=>item.parsed.y!==null,callbacks:{label:ctx=>' '+ctx.dataset.label+'：'+fmt(ctx.parsed.y)+' 萬'}}},
+      scales:{
+        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4a4946',font:{size:10,family:'monospace'},maxTicksLimit:12,maxRotation:0}},
+        y:{min:0,max:mx,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4a4946',font:{size:10,family:'monospace'},callback:v=>fmt(v)+'萬'}}
+      }
+    }
+  });
+}
+document.getElementById('rules-toggle').addEventListener('click',()=>{
+  const b=document.getElementById('rules-body');
+  const i=document.getElementById('rti');
+  const open=b.style.display==='block';
+  b.style.display=open?'none':'block';
+  i.style.transform=open?'none':'rotate(90deg)';
+});
+['s-age','s-retire','s-salary','s-save','s-return','s-current','s-inflation','s-pension','s-lumpsum','s-vol','s-life'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',calc);
+});
+calc();
+</script>
+</body>
+</html>
