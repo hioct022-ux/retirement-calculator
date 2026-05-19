@@ -6,16 +6,16 @@
 <title>退休金試算器</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
-:root{--bg:#0e0f0d;--surface:#161714;--surface2:#1e1f1c;--surface3:#262723;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#f0ece3;--text2:#8a8880;--text3:#4a4946;--green:#4ade9a;--amber:#fbbf24;--red:#f87171;--blue:#60a5fa;--accent:#4ade9a;--r:8px;--rl:14px}
+:root{--bg:#f5f5f0;--surface:#ffffff;--surface2:#efefea;--surface3:#e0dfd8;--border:rgba(0,0,0,0.09);--border2:rgba(0,0,0,0.18);--text:#1a1916;--text2:#5a5955;--text3:#9a9893;--green:#0e6e45;--amber:#92500a;--red:#b91c1c;--blue:#1d4ed8;--accent:#0e6e45;--r:8px;--rl:14px}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue','PingFang TC','Microsoft JhengHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
-.header{border-bottom:0.5px solid var(--border);padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.header{border-bottom:0.5px solid var(--border);padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;background:var(--surface)}
 .header h1{font-size:1.75rem;font-weight:700;letter-spacing:-0.02em;line-height:1;margin-bottom:4px}
 .header p{font-size:12px;color:var(--text2);font-weight:300}
 .status-badge{font-family:monospace;font-size:11px;padding:5px 14px;border-radius:99px;border:0.5px solid;white-space:nowrap;transition:all .3s;flex-shrink:0}
 .main{display:flex;min-height:calc(100vh - 90px)}
-.sidebar{width:285px;flex-shrink:0;border-right:0.5px solid var(--border);padding:1.5rem 1.25rem;overflow-y:auto;display:flex;flex-direction:column;gap:1.25rem}
+.sidebar{width:285px;flex-shrink:0;border-right:0.5px solid var(--border);padding:1.5rem 1.25rem;overflow-y:auto;display:flex;flex-direction:column;gap:1.25rem;background:var(--surface)}
 .sec-title{font-family:monospace;font-size:10px;color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.9rem;display:flex;align-items:center;gap:8px}
 .sec-title::after{content:'';flex:1;height:.5px;background:var(--border)}
 .sg{margin-bottom:.85rem}
@@ -24,13 +24,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue','PingFang TC'
 .sl{font-size:11px;color:var(--text2);font-weight:300}
 .sv{font-family:monospace;font-size:11px;color:var(--accent);font-weight:600}
 input[type=range]{-webkit-appearance:none;width:100%;height:2px;background:var(--surface3);border-radius:99px;outline:none;cursor:pointer}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid var(--bg);box-shadow:0 0 0 1px var(--accent);transition:transform .15s}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent);transition:transform .15s}
 input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
 .sub{font-size:10px;color:var(--text3);margin-top:3px;font-weight:300}
 .pbox{background:var(--surface2);border:0.5px solid var(--border);border-radius:var(--r);padding:.9rem 1rem;margin-bottom:8px}
 .pbox:last-child{margin-bottom:0}
 .pbox-title{font-size:11px;color:var(--text2);margin-bottom:.75rem;display:flex;align-items:center;gap:6px}
-.nbadge{font-family:monospace;font-size:9px;padding:1px 6px;border-radius:3px;background:rgba(74,222,154,.15);color:var(--green);border:0.5px solid rgba(74,222,154,.3)}
+.nbadge{font-family:monospace;font-size:9px;padding:1px 6px;border-radius:3px;background:rgba(14,110,69,.1);color:#0e6e45;border:0.5px solid rgba(14,110,69,.25)}
 .content{flex:1;padding:1.5rem 1.75rem;display:flex;flex-direction:column;gap:1.1rem;overflow-y:auto}
 .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 .metric{background:var(--surface2);border-radius:var(--rl);padding:.875rem 1rem;border:0.5px solid var(--border)}
@@ -83,7 +83,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
   <aside class="sidebar">
     <div>
       <div class="sec-title">基本設定</div>
-      <div class="sg"><div class="sh"><span class="sl">目前年齡</span><span class="sv" id="v-age">30 歲</span></div><input type="range" id="s-age" min="20" max="60" value="30" step="1"></div>
+      <div class="sg"><div class="sh"><span class="sl">目前年齡</span><span class="sv" id="v-age">30 歲</span></div><input type="range" id="s-age" min="20" max="70" value="30" step="1"></div>
       <div class="sg"><div class="sh"><span class="sl">預計退休年齡</span><span class="sv" id="v-retire">65 歲</span></div><input type="range" id="s-retire" min="50" max="75" value="65" step="1"></div>
       <div class="sg"><div class="sh"><span class="sl">月薪</span><span class="sv" id="v-salary">5 萬</span></div><input type="range" id="s-salary" min="2" max="30" value="5" step="0.5"></div>
       <div class="sg"><div class="sh"><span class="sl">儲蓄率</span><span class="sv" id="v-save">20%</span></div><input type="range" id="s-save" min="5" max="70" value="20" step="1"></div>
@@ -119,10 +119,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
       <div class="chart-hdr">
         <span class="chart-title">資產預測曲線 — 實質購買力（今日幣值）</span>
         <div class="leg-row">
-          <div class="leg"><div class="leg-line" style="background:#4ade9a"></div>基準累積</div>
-          <div class="leg"><div class="leg-line" style="background:rgba(74,222,154,.4)"></div>樂/悲觀</div>
-          <div class="leg"><div class="leg-line" style="background:#fbbf24"></div>基準提領</div>
-          <div class="leg"><div class="leg-line" style="background:rgba(251,191,36,.4)"></div>提領區間</div>
+          <div class="leg"><div class="leg-line" style="background:#0e6e45"></div>基準累積</div>
+          <div class="leg"><div class="leg-line" style="background:rgba(14,110,69,.4)"></div>樂/悲觀</div>
+          <div class="leg"><div class="leg-line" style="background:#92500a"></div>基準提領</div>
+          <div class="leg"><div class="leg-line" style="background:rgba(146,80,10,.4)"></div>提領區間</div>
         </div>
       </div>
       <div class="chart-area"><canvas id="retireChart" role="img" aria-label="退休資產預測折線圖，顯示樂觀、基準、悲觀三種情境下的累積與提領曲線">請拖動左側滑桿以更新圖表</canvas></div>
@@ -195,15 +195,15 @@ function calc(){
   document.getElementById('m-bear').textContent='$'+fmt(res.bearRA)+'萬';
   document.getElementById('m-years').textContent=ytr+' 年';
   const badge=document.getElementById('status-badge');
-  if(totalM>=exp){badge.textContent='✦ 財務充裕';badge.style.cssText='color:#4ade9a;border-color:rgba(74,222,154,.4);background:rgba(74,222,154,.08)';}
-  else if(totalM>=exp*.7){badge.textContent='◆ 尚可調整';badge.style.cssText='color:#fbbf24;border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.08)';}
-  else{badge.textContent='▲ 需要加強';badge.style.cssText='color:#f87171;border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.08)';}
+  if(totalM>=exp){badge.textContent='✦ 財務充裕';badge.style.cssText='color:#0e6e45;border-color:rgba(14,110,69,.4);background:rgba(14,110,69,.08)';}
+  else if(totalM>=exp*.7){badge.textContent='◆ 尚可調整';badge.style.cssText='color:#92500a;border-color:rgba(146,80,10,.4);background:rgba(146,80,10,.08)';}
+  else{badge.textContent='▲ 需要加強';badge.style.cssText='color:#b91c1c;border-color:rgba(185,28,28,.4);background:rgba(185,28,28,.08)';}
   const tags=[
-    {l:`實質報酬 ${realR.toFixed(1)}%`,c:'#fbbf24',bg:'rgba(251,191,36,.06)',bc:'rgba(251,191,36,.3)'},
-    {l:`月領 ${document.getElementById('s-pension').value}萬`,c:'#4ade9a',bg:'rgba(74,222,154,.06)',bc:'rgba(74,222,154,.3)'},
-    ...(lsV>0?[{l:`整筆 ${fmtW(lsV)}`,c:'#60a5fa',bg:'rgba(96,165,250,.06)',bc:'rgba(96,165,250,.3)'}]:[]),
-    {l:`波動 ±${document.getElementById('s-vol').value}%`,c:'#a78bfa',bg:'rgba(167,139,250,.06)',bc:'rgba(167,139,250,.3)'},
-    {l:`距退休 ${ytr}年`,c:'#4a4946',bg:'transparent',bc:'rgba(255,255,255,.07)'},
+    {l:`實質報酬 ${realR.toFixed(1)}%`,c:'#92500a',bg:'rgba(146,80,10,.07)',bc:'rgba(146,80,10,.25)'},
+    {l:`月領 ${document.getElementById('s-pension').value}萬`,c:'#0e6e45',bg:'rgba(14,110,69,.07)',bc:'rgba(14,110,69,.25)'},
+    ...(lsV>0?[{l:`整筆 ${fmtW(lsV)}`,c:'#1d4ed8',bg:'rgba(29,78,216,.07)',bc:'rgba(29,78,216,.25)'}]:[]),
+    {l:`波動 ±${document.getElementById('s-vol').value}%`,c:'#534AB7',bg:'rgba(83,74,183,.07)',bc:'rgba(83,74,183,.25)'},
+    {l:`距退休 ${ytr}年`,c:'#5a5955',bg:'rgba(0,0,0,.04)',bc:'rgba(0,0,0,.12)'},
   ];
   document.getElementById('tag-row').innerHTML=tags.map(t=>`<span class="tag" style="color:${t.c};background:${t.bg};border-color:${t.bc}">${t.l}</span>`).join('');
   const labels=[];
@@ -222,20 +222,20 @@ function calc(){
   chart=new Chart(document.getElementById('retireChart'),{
     type:'line',
     data:{labels,datasets:[
-      {label:'樂觀累積',data:blA,borderColor:'rgba(74,222,154,.35)',backgroundColor:'rgba(74,222,154,.05)',fill:true,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
-      {label:'基準累積',data:bA,borderColor:'#4ade9a',backgroundColor:'rgba(74,222,154,.08)',fill:true,tension:.35,pointRadius:0,borderWidth:2.5},
-      {label:'悲觀累積',data:brA,borderColor:'rgba(248,113,113,.35)',backgroundColor:'rgba(248,113,113,.04)',fill:true,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
-      {label:'樂觀提領',data:blW,borderColor:'rgba(251,191,36,.35)',fill:false,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
-      {label:'基準提領',data:bW,borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.08)',fill:true,tension:.35,pointRadius:0,borderWidth:2.5},
-      {label:'悲觀提領',data:brW,borderColor:'rgba(248,113,113,.4)',fill:false,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
+      {label:'樂觀累積',data:blA,borderColor:'rgba(14,110,69,.3)',backgroundColor:'rgba(14,110,69,.04)',fill:true,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
+      {label:'基準累積',data:bA,borderColor:'#0e6e45',backgroundColor:'rgba(14,110,69,.07)',fill:true,tension:.35,pointRadius:0,borderWidth:2.5},
+      {label:'悲觀累積',data:brA,borderColor:'rgba(185,28,28,.3)',backgroundColor:'rgba(185,28,28,.03)',fill:true,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
+      {label:'樂觀提領',data:blW,borderColor:'rgba(146,80,10,.3)',fill:false,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
+      {label:'基準提領',data:bW,borderColor:'#92500a',backgroundColor:'rgba(146,80,10,.06)',fill:true,tension:.35,pointRadius:0,borderWidth:2.5},
+      {label:'悲觀提領',data:brW,borderColor:'rgba(185,28,28,.35)',fill:false,tension:.35,pointRadius:0,borderWidth:1.5,borderDash:[4,3]},
     ]},
     options:{
       responsive:true,maintainAspectRatio:false,
       interaction:{mode:'index',intersect:false},
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1e1f1c',borderColor:'rgba(255,255,255,.1)',borderWidth:.5,titleColor:'#8a8880',bodyColor:'#f0ece3',padding:10,filter:item=>item.parsed.y!==null,callbacks:{label:ctx=>' '+ctx.dataset.label+'：'+fmt(ctx.parsed.y)+' 萬'}}},
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#ffffff',borderColor:'rgba(0,0,0,.12)',borderWidth:1,titleColor:'#5a5955',bodyColor:'#1a1916',padding:10,filter:item=>item.parsed.y!==null,callbacks:{label:ctx=>' '+ctx.dataset.label+'：'+fmt(ctx.parsed.y)+' 萬'}}},
       scales:{
-        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4a4946',font:{size:10,family:'monospace'},maxTicksLimit:12,maxRotation:0}},
-        y:{min:0,max:mx,grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#4a4946',font:{size:10,family:'monospace'},callback:v=>fmt(v)+'萬'}}
+        x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#9a9893',font:{size:10,family:'monospace'},maxTicksLimit:12,maxRotation:0}},
+        y:{min:0,max:mx,grid:{color:'rgba(0,0,0,.05)'},ticks:{color:'#9a9893',font:{size:10,family:'monospace'},callback:v=>fmt(v)+'萬'}}
       }
     }
   });
